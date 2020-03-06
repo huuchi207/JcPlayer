@@ -25,6 +25,6 @@
 
         <attr name="show_random_button" format="boolean" />
         <attr name="show_repeat_button" format="boolean" />
-
+        <attr name="small_icon" format="reference" />
     </declare-styleable>
 </resources>

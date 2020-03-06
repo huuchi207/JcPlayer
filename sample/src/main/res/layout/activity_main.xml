@@ -23,6 +23,8 @@
         android:layout_alignParentBottom="true"
         android:background="@drawable/bg_player_dark"
         android:gravity="bottom"
+        app:small_icon="@android:color/holo_green_light"
+
         app:next_icon_color="@android:color/holo_green_light"
         app:pause_icon_color="@android:color/holo_green_light"
         app:play_icon_color="@android:color/holo_green_light"

@@ -262,7 +262,7 @@ private constructor(private val serviceConnection: JcServiceConnection) : JcPlay
         for (listener in managerListeners) {
             listener.onTimeChanged(status)
 
-            if (status.currentPosition in 1..2 /* Not to call this every second */) {
+            if (status.currentPosition in 1000..2000 /* Not to call this every second */) {
                 listener.onPlaying(status)
             }
         }

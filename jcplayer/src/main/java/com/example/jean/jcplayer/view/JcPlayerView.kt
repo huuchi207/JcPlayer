@@ -7,10 +7,7 @@ import android.os.Build
 import android.support.v4.content.res.ResourcesCompat
 import android.util.AttributeSet
 import android.view.View
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.SeekBar
+import android.widget.*
 import com.daimajia.androidanimations.library.Techniques
 import com.daimajia.androidanimations.library.YoYo
 import com.example.jean.jcplayer.JcPlayerManager
@@ -55,6 +52,14 @@ class JcPlayerView : LinearLayout, View.OnClickListener, SeekBar.OnSeekBarChange
             jcPlayerManager.jcPlayerManagerListener = value
         }
 
+    var attrs: TypedArray? = null
+    var btnGoNext: ImageButton? = null
+    var btnGoPrevious: ImageButton? = null
+    var btnAlarm: ImageButton? = null
+    var btnDownload: ImageButton? = null
+    var isViewForAudiobook: Boolean = false
+
+    var currentTime: Int? = 0
 
     companion object {
         private const val PULSE_ANIMATION_DURATION = 200L
@@ -95,6 +100,7 @@ class JcPlayerView : LinearLayout, View.OnClickListener, SeekBar.OnSeekBarChange
     }
 
     private fun setAttributes(attrs: TypedArray) {
+        this.attrs = attrs
         val defaultColor = ResourcesCompat.getColor(resources, android.R.color.black, null)
 
         txtCurrentMusic?.setTextColor(attrs.getColor(R.styleable.JcPlayerView_text_audio_title_color, defaultColor))
@@ -114,37 +120,37 @@ class JcPlayerView : LinearLayout, View.OnClickListener, SeekBar.OnSeekBarChange
 
         btnPause.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_pause_icon, R.drawable.ic_pause))
         btnPause.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_pause_icon_color, defaultColor))
-
-        btnNext?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_next_icon_color, defaultColor))
-        btnNext?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_next_icon, R.drawable.ic_next))
-
-        btnPrev?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_previous_icon_color, defaultColor))
-        btnPrev?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_previous_icon, R.drawable.ic_previous))
-
-        btnRandom?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_random_icon_color, defaultColor))
-        btnRandomIndicator?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_random_icon_color, defaultColor))
-        btnRandom?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_random_icon, R.drawable.ic_shuffle))
-        attrs.getBoolean(R.styleable.JcPlayerView_show_random_button, true).also { showButton ->
-            if (showButton) {
-                btnRandom?.visibility = View.VISIBLE
-            } else {
-                btnRandom?.visibility = View.GONE
-            }
-        }
-
-        btnRepeat?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_repeat_icon_color, defaultColor))
-        btnRepeatIndicator?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_repeat_icon_color, defaultColor))
-        btnRepeat?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_repeat_icon, R.drawable.ic_repeat))
-        attrs.getBoolean(R.styleable.JcPlayerView_show_repeat_button, true).also { showButton ->
-            if (showButton) {
-                btnRepeat?.visibility = View.VISIBLE
-            } else {
-                btnRepeat?.visibility = View.GONE
-            }
-        }
-
-        btnRepeatOne?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_repeat_one_icon_color, attrs.getColor(R.styleable.JcPlayerView_repeat_icon_color, defaultColor)))
-        btnRepeatOne?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_repeat_one_icon, R.drawable.ic_repeat_one))
+//
+//        btnNext?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_next_icon_color, defaultColor))
+//        btnNext?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_next_icon, R.drawable.ic_next))
+//
+//        btnPrev?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_previous_icon_color, defaultColor))
+//        btnPrev?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_previous_icon, R.drawable.ic_previous))
+//
+//        btnRandom?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_random_icon_color, defaultColor))
+//        btnRandomIndicator?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_random_icon_color, defaultColor))
+//        btnRandom?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_random_icon, R.drawable.ic_shuffle))
+//        attrs.getBoolean(R.styleable.JcPlayerView_show_random_button, true).also { showButton ->
+//            if (showButton) {
+//                btnRandom?.visibility = View.VISIBLE
+//            } else {
+//                btnRandom?.visibility = View.GONE
+//            }
+//        }
+//
+//        btnRepeat?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_repeat_icon_color, defaultColor))
+//        btnRepeatIndicator?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_repeat_icon_color, defaultColor))
+//        btnRepeat?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_repeat_icon, R.drawable.ic_repeat))
+//        attrs.getBoolean(R.styleable.JcPlayerView_show_repeat_button, true).also { showButton ->
+//            if (showButton) {
+//                btnRepeat?.visibility = View.VISIBLE
+//            } else {
+//                btnRepeat?.visibility = View.GONE
+//            }
+//        }
+//
+//        btnRepeatOne?.setColorFilter(attrs.getColor(R.styleable.JcPlayerView_repeat_one_icon_color, attrs.getColor(R.styleable.JcPlayerView_repeat_icon_color, defaultColor)))
+//        btnRepeatOne?.setImageResource(attrs.getResourceId(R.styleable.JcPlayerView_repeat_one_icon, R.drawable.ic_repeat_one))
     }
 
     /**
@@ -330,54 +336,97 @@ class JcPlayerView : LinearLayout, View.OnClickListener, SeekBar.OnSeekBarChange
     }
 
     override fun onClick(view: View) {
-        when (view.id) {
-            R.id.btnPlay ->
-                btnPlay?.let {
-                    applyPulseAnimation(it)
-                    continueAudio()
+        if (!isViewForAudiobook){
+            when (view.id) {
+                R.id.btnPlay ->
+                    btnPlay?.let {
+                        applyPulseAnimation(it)
+                        continueAudio()
+                    }
+
+                R.id.btnPause -> {
+                    btnPause?.let {
+                        applyPulseAnimation(it)
+                        pause()
+                    }
                 }
 
-            R.id.btnPause -> {
-                btnPause?.let {
-                    applyPulseAnimation(it)
-                    pause()
+                R.id.btnNext ->
+                    btnNext?.let {
+                        applyPulseAnimation(it)
+                        next()
+                    }
+
+                R.id.btnPrev ->
+                    btnPrev?.let {
+                        applyPulseAnimation(it)
+                        previous()
+                    }
+
+                R.id.btnRandom -> {
+                    jcPlayerManager.onShuffleMode = jcPlayerManager.onShuffleMode.not()
+                    btnRandomIndicator.visibility = if (jcPlayerManager.onShuffleMode) View.VISIBLE else View.GONE
+                }
+
+
+                else -> { // Repeat case
+                    jcPlayerManager.activeRepeat()
+                    val active = jcPlayerManager.repeatPlaylist or jcPlayerManager.repeatCurrAudio
+
+                    btnRepeat?.visibility = View.VISIBLE
+                    btnRepeatOne?.visibility = View.GONE
+
+                    if (active) {
+                        btnRepeatIndicator?.visibility = View.VISIBLE
+                    } else {
+                        btnRepeatIndicator?.visibility = View.GONE
+                    }
+
+                    if (jcPlayerManager.repeatCurrAudio) {
+                        btnRepeatOne?.visibility = View.VISIBLE
+                        btnRepeat?.visibility = View.GONE
+                    }
                 }
             }
+        } else {
+            when (view) {
+                btnPlay ->
+                    btnPlay?.let {
+                        applyPulseAnimation(it)
+                        continueAudio()
+                    }
 
-            R.id.btnNext ->
-                btnNext?.let {
-                    applyPulseAnimation(it)
-                    next()
+                btnPause -> {
+                    btnPause?.let {
+                        applyPulseAnimation(it)
+                        pause()
+                    }
                 }
 
-            R.id.btnPrev ->
-                btnPrev?.let {
-                    applyPulseAnimation(it)
-                    previous()
+                btnGoNext ->
+                    btnGoNext?.let {
+                        applyPulseAnimation(it)
+//                        next()
+                    }
+
+                btnGoPrevious ->
+                    btnGoPrevious?.let {
+                        applyPulseAnimation(it)
+//                        previous()
+                    }
+
+                btnDownload -> {
+                    btnDownload?.let {
+                        applyPulseAnimation(it)
+//                        previous()
+                    }
                 }
 
-            R.id.btnRandom -> {
-                jcPlayerManager.onShuffleMode = jcPlayerManager.onShuffleMode.not()
-                btnRandomIndicator.visibility = if (jcPlayerManager.onShuffleMode) View.VISIBLE else View.GONE
-            }
-
-
-            else -> { // Repeat case
-                jcPlayerManager.activeRepeat()
-                val active = jcPlayerManager.repeatPlaylist or jcPlayerManager.repeatCurrAudio
-
-                btnRepeat?.visibility = View.VISIBLE
-                btnRepeatOne?.visibility = View.GONE
-
-                if (active) {
-                    btnRepeatIndicator?.visibility = View.VISIBLE
-                } else {
-                    btnRepeatIndicator?.visibility = View.GONE
-                }
-
-                if (jcPlayerManager.repeatCurrAudio) {
-                    btnRepeatOne?.visibility = View.VISIBLE
-                    btnRepeat?.visibility = View.GONE
+                btnAlarm -> {
+                    btnAlarm?.let {
+                        applyPulseAnimation(it)
+//                        previous()
+                    }
                 }
             }
         }
@@ -460,6 +509,7 @@ class JcPlayerView : LinearLayout, View.OnClickListener, SeekBar.OnSeekBarChange
 
     override fun onTimeChanged(status: JcStatus) {
         val currentPosition = status.currentPosition.toInt()
+        currentTime = currentPosition
         seekBar?.post { seekBar?.progress = currentPosition }
         txtCurrentDuration?.post { txtCurrentDuration?.text = toTimeSongString(currentPosition) }
     }
@@ -557,5 +607,34 @@ class JcPlayerView : LinearLayout, View.OnClickListener, SeekBar.OnSeekBarChange
      */
     fun kill() {
         jcPlayerManager.kill()
+    }
+
+    fun viewForAudiobook() {
+        val defaultColor = ResourcesCompat.getColor(resources, android.R.color.black, null)
+
+        isViewForAudiobook = true
+
+        btnGoNext = btnRepeat
+        btnGoPrevious = btnRandom
+        btnDownload = btnNext
+        btnAlarm = btnPrev
+
+        btnDownload?.setColorFilter(attrs!!.getColor(R.styleable.JcPlayerView_small_icon, defaultColor))
+        btnAlarm?.setColorFilter(attrs!!.getColor(R.styleable.JcPlayerView_small_icon, defaultColor))
+        btnGoPrevious?.setColorFilter(attrs!!.getColor(R.styleable.JcPlayerView_small_icon, defaultColor))
+        btnGoNext?.setColorFilter(attrs!!.getColor(R.styleable.JcPlayerView_small_icon, defaultColor))
+
+
+        btnDownload?.setImageResource(R.drawable.ic_download)
+        btnAlarm?.setImageResource(R.drawable.ic_alarm)
+        btnGoPrevious?.setImageResource(R.drawable.go_previous)
+        btnGoNext?.setImageResource(R.drawable.go_next)
+
+    }
+
+    fun seekTo(time: Int) {
+        jcPlayerManager.let {
+            it.seekTo(time)
+        }
     }
 }

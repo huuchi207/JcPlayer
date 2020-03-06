@@ -9,6 +9,7 @@ import android.support.v7.widget.SimpleItemAnimator;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.jean.jcplayer.JcPlayerManager;
 import com.example.jean.jcplayer.JcPlayerManagerListener;
 import com.example.jean.jcplayer.general.JcStatus;
 import com.example.jean.jcplayer.general.errors.OnInvalidPathListener;
@@ -73,6 +74,8 @@ public class MainActivity extends AppCompatActivity
 //        player.addAudio(JcAudio.createFromFilePath(this.getFilesDir() + "/" + "121212.mmid"));
 
         player.initPlaylist(jcAudios, this);
+        player.viewForAudiobook();
+        player.playAudio(jcAudios.get(0));
         adapterSetup();
     }
 
@@ -151,7 +154,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onPlaying(JcStatus status) {
-
+        player.seekTo(39*1000);
     }
 
     @Override
